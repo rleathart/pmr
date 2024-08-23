@@ -21,12 +21,20 @@ set_target_properties(pmr PROPERTIES
     CXX_STANDARD 11
     VERSION ${PMR_VERSION}
     SOVERSION ${PMR_VERSION_MAJOR})
-target_compile_options(pmr
-    PRIVATE -Wall
-    PRIVATE -Wpedantic
-    PRIVATE -Wextra
-    PRIVATE -Werror
-)
+
+if (MSVC)
+  target_compile_options(pmr
+      PRIVATE -W4
+      PRIVATE -WX
+  )
+else()
+  target_compile_options(pmr
+      PRIVATE -Wall
+      PRIVATE -Wpedantic
+      PRIVATE -Wextra
+      PRIVATE -Werror
+  )
+endif()
 
 include(CTest)
 
