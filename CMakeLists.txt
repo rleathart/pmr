@@ -7,6 +7,8 @@ set(PMR_VERSION ${PMR_VERSION_MAJOR}.${PMR_VERSION_MINOR}.${PMR_VERSION_PATCH})
 
 project(pmr VERSION ${PMR_VERSION} LANGUAGES CXX)
 
+option(PMR_ENABLE_TESTS "Build tests along with the `all` target")
+
 set(pmr_srcs
   src/memblocks.cpp
   src/memory_resource.cpp
