@@ -8,13 +8,13 @@ namespace pmr
     template <typename K,
               typename Hash = std::hash<K>,
               typename Pred = std::equal_to<K>>
-    using unordered_map =
+    using unordered_set =
         std::unordered_map<K, Hash, Pred, polymorphic_allocator<K>>;
 
 
     template <typename K,
               typename Hash = std::hash<K>,
               typename Pred = std::equal_to<K>>
-    using unordered_multimap =
-        std::unordered_multimap<K, Hash, Pred, polymorphic_allocator<K>>;
+    using unordered_multiset =
+        std::unordered_multiset<K, Hash, Pred, polymorphic_allocator<K>>;
 }
