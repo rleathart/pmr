@@ -5,6 +5,8 @@ set(PMR_VERSION_MINOR 1)
 set(PMR_VERSION_PATCH 1)
 set(PMR_VERSION ${PMR_VERSION_MAJOR}.${PMR_VERSION_MINOR}.${PMR_VERSION_PATCH})
 
+set(PMR_STD_VER "" CACHE STRING "The C++ standard to provide pmr:: functionality from")
+
 project(pmr VERSION ${PMR_VERSION} LANGUAGES CXX)
 
 option(PMR_ENABLE_TESTS "Build tests along with the `all` target")
@@ -19,10 +21,14 @@ target_include_directories(pmr PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     PRIVATE src)
+target_compile_features(pmr PUBLIC cxx_std_11)
 set_target_properties(pmr PROPERTIES
-    CXX_STANDARD 11
     VERSION ${PMR_VERSION}
     SOVERSION ${PMR_VERSION_MAJOR})
+
+if (NOT "${PMR_STD_VER}" STREQUAL "")
+  target_compile_definitions(pmr PUBLIC PMR_STD_VER=${PMR_STD_VER})
+endif()
 
 if (MSVC)
   target_compile_options(pmr

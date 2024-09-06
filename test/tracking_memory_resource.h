@@ -2,6 +2,7 @@
 
 #include "pmr/memory_resource.h"
 #include <algorithm>
+#include <numeric>
 #include <vector>
 #include <ostream>
 

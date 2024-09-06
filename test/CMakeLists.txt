@@ -12,5 +12,9 @@ endforeach()
 
 target_link_libraries(${test_bin} pmr)
 target_include_directories(${test_bin} SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/thirdparty/include")
-set_property(TARGET ${test_bin} PROPERTY CXX_STANDARD 11)
+target_compile_features(${test_bin} PRIVATE cxx_std_11)
 add_compile_options(-Wall -Wpedantic -Wextra -Werror)
+
+if (NOT "${PMR_STD_VER}" STREQUAL "")
+  target_compile_definitions(${test_bin} PRIVATE PMR_STD_VER=${PMR_STD_VER})
+endif()

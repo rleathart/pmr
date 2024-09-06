@@ -181,4 +181,36 @@ TEST_CASE_METHOD(use_tracking_default, "list of allocator-aware", tags)
     CHECK(tracked_memory.allocations.empty());
 }
 
+#if PMR_STD_VER >= 20
 
+TEST_CASE("C++20 default template arguments")
+{
+  auto a = pmr::polymorphic_allocator<> {}; // should compile without template arguments
+}
+
+TEST_CASE_METHOD(use_tracking_default, "C++20 functions", tags)
+{
+  auto a = pmr::polymorphic_allocator<> {&tracked_memory};
+  auto p = a.allocate_bytes(16, alignof(int));
+  a.deallocate_bytes(p, 16, alignof(int));
+
+  CHECK(tracked_memory.allocations.back() == 16);
+  CHECK(tracked_memory.deallocations.back() == 16);
+
+  auto o = a.allocate_object<int>(1);
+  a.deallocate_object(o, 1);
+
+  CHECK(tracked_memory.allocations.back() == 4);
+  CHECK(tracked_memory.deallocations.back() == 4);
+
+  auto obj = a.new_object<double>(42.0);
+  CHECK(*obj == 42.0);
+  a.delete_object(obj);
+
+  CHECK(tracked_memory.allocations.back() == 8);
+  CHECK(tracked_memory.deallocations.back() == 8);
+
+  CHECK(tracked_memory.all_memory_deallocated() == true);
+}
+
+#endif

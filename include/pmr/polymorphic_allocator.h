@@ -1,14 +1,25 @@
 #pragma once
 
+#include "detail/config.h"
 #include "memory_resource.h"
 #include <cassert>
+#include <cstddef>
 #include <type_traits>
 #include <tuple>
+#include <limits>
 
 namespace pmr
 {
     //! Adapts the pmr::memory_resource interface to the Allocator concept
+    #if PMR_STD_VER >= 20
+    #if defined(__cpp_lib_byte) && __cpp_lib_byte >= 201603L
+    template <typename T = std::byte>
+    #else
+    template <typename T = unsigned char>
+    #endif
+    #else
     template <typename T>
+    #endif
     class polymorphic_allocator
     {
       public:
@@ -70,6 +81,55 @@ namespace pmr
         //! \param n the number of instances of T that comprise the block being
         //!          deallocated
         void deallocate(pointer ptr, std::size_t n);
+
+        #if PMR_STD_VER >= 20
+        //! Allocates nbytes bytes of storage at specified alignment alignment
+        //! using the underlying memory resource.
+        //!
+        //! \param nbytes The number of bytes to allocate
+        //! \param alignment The required alignment
+        //! \return a pointer to the allocated memory
+        [[nodiscard]]
+        void* allocate_bytes(std::size_t nbytes, std::size_t alignment = alignof(std::max_align_t));
+
+        //! Deallocates the storage pointed to by p.
+        //
+        //! \param p A pointer to the block to deallocate
+        //! \param nbytes The number of bytes to deallocate
+        //! \param alignment The alignment of the memory block
+        void deallocate_bytes(void* p, std::size_t nbytes, std::size_t alignment = alignof(std::max_align_t));
+
+        //! Allocates storage for n objects of type U using the underlying memory resource.
+        //! If std::numeric_limits<std::size_t>::max() / sizeof(U) < n, throws
+        //! std::bad_array_new_length.
+        //
+        //! \param n Number of objects to allocate
+        //! \return Pointer to allocated objects
+        template <typename U>
+        [[nodiscard]]
+        U* allocate_object(std::size_t n = 1);
+
+        //! Deallocates the storage pointed to by p.
+        //
+        //! \param p A pointer to the block to deallocate
+        //! \param n The number of objects to deallocate
+        template <typename U>
+        void deallocate_object(U* p, std::size_t n = 1);
+
+        //! Allocates and constructs an object of type U.
+        //!
+        //! \param args the arguments to forward to the constructor of U
+        //! \returns A pointer to the allocated and constructed object
+        template <typename U, typename... Args>
+        [[nodiscard]]
+        U* new_object(Args&&... args);
+
+        //! Destroys the object of type U and deallocates storage allocated for it.
+        //!
+        //! \param p pointer to the object to destroy and deallocate
+        template <typename U>
+        void delete_object(U* p);
+        #endif
 
         //! Constructs an instance of U via allocator-aware construction rules
         //!
@@ -239,6 +299,62 @@ namespace pmr
         m_memory->deallocate(ptr, n * sizeof(T), alignof(T));
     }
 
+    #if PMR_STD_VER >= 20
+
+    template <typename T>
+    void* polymorphic_allocator<T>::allocate_bytes(std::size_t nbytes, std::size_t alignment)
+    {
+      return resource()->allocate(nbytes, alignment);
+    }
+
+    template <typename T>
+    void polymorphic_allocator<T>::deallocate_bytes(void* p, std::size_t nbytes, std::size_t alignment)
+    {
+      resource()->deallocate(p, nbytes, alignment);
+    }
+
+    template <typename T>
+    template <typename U>
+    U* polymorphic_allocator<T>::allocate_object(std::size_t n)
+    {
+      if (std::numeric_limits<size_t>::max() / sizeof(U) < n)
+        throw std::bad_array_new_length();
+      return static_cast<U*>(allocate_bytes(n * sizeof(U), alignof(U)));
+    }
+
+    template <typename T>
+    template <typename U>
+    void polymorphic_allocator<T>::deallocate_object(U* p, std::size_t n)
+    {
+      deallocate_bytes(p, n * sizeof(U), alignof(U));
+    }
+
+    template <typename T>
+    template <typename U, typename... Args>
+    U* polymorphic_allocator<T>::new_object(Args&&... args)
+    {
+      U* p = allocate_object<U>();
+      try
+      {
+        construct(p, std::forward<Args>(args)...);
+      }
+      catch (...)
+      {
+        deallocate_object(p);
+        throw;
+      }
+      return p;
+    }
+
+    template <typename T>
+    template <typename U>
+    void polymorphic_allocator<T>::delete_object(U* p)
+    {
+      destroy(p);
+      deallocate_object(p);
+    }
+
+    #endif
 
     template <typename T>
     template <typename U, typename... Args>
