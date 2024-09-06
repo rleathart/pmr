@@ -9,7 +9,7 @@ namespace pmr
               typename Hash = std::hash<K>,
               typename Pred = std::equal_to<K>>
     using unordered_set =
-        std::unordered_map<K, Hash, Pred, polymorphic_allocator<K>>;
+        std::unordered_set<K, Hash, Pred, polymorphic_allocator<K>>;
 
 
     template <typename K,
