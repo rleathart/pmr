@@ -8,7 +8,7 @@ namespace pmr
 {
     template <typename Iter>
     using match_results =
-        std::match_results<Iter, polymorphic_allocator<std::sub_match<Iter>>;
+        std::match_results<Iter, polymorphic_allocator<std::sub_match<Iter>>>;
 
 
     using cmatch = match_results<const char*>;

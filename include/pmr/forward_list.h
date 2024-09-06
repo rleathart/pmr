@@ -1,6 +1,6 @@
 #pragma once
 
-#include <deque>
+#include <forward_list>
 #include "polymorphic_allocator.h"
 
 namespace pmr
