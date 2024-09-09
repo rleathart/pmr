@@ -62,7 +62,7 @@ namespace pmr
         monotonic_buffer_resource(const monotonic_buffer_resource&) = delete;
 
         //! Calls release()
-        ~monotonic_buffer_resource();
+        ~monotonic_buffer_resource() override;
 
         monotonic_buffer_resource& operator=(
                 const monotonic_buffer_resource&) = delete;
